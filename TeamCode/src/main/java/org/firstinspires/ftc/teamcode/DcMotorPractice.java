@@ -1,0 +1,23 @@
+package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.mechanisms.DecodeHardwareSetup;
+
+@TeleOp
+public class DcMotorPractice extends OpMode {
+
+    DecodeHardwareSetup robot = new DecodeHardwareSetup();
+
+    @Override
+    public void init() {
+        robot.init(hardwareMap);
+    }
+
+    @Override
+    public void loop() {
+        double motorSpeed = gamepad1.left_stick_y;
+        robot.setMotorSpeed(motorSpeed);
+    }
+}
