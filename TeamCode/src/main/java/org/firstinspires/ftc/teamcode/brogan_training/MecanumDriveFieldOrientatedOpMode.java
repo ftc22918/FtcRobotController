@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.brogan_training;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
+import org.firstinspires.ftc.teamcode.brogan_training.mechanisms.MecanumDrive;
 
 @TeleOp
 public class MecanumDriveFieldOrientatedOpMode extends OpMode {

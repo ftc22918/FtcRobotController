@@ -14,11 +14,11 @@ public class Keith_Main_TeleOP_Template extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         initHardware();
         while (!isStarted()) {
-            telemetry();
+//            telemetry();
         }
         waitForStart();
         while (opModeIsActive()) {
-            telemetry();
+//            telemetry();
         }
     }
     public void initHardware() {
@@ -28,7 +28,7 @@ public class Keith_Main_TeleOP_Template extends LinearOpMode {
     private void initMotorLeftFront() {
         motorLeftFront = hardwareMap.get(DcMotor.class, "motorLeftFront");
         motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
-        motorLeftFront.setPosition(servoOneInitPosition);
+//        motorLeftFront.setPosition(servoOneInitPosition);
     }
 }
 

@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.mechanisms.DecodeHardwareSetup;
+import org.firstinspires.ftc.teamcode.brogan_training.mechanisms.DecodeHardwareSetup;
 
 @Disabled
 @Autonomous

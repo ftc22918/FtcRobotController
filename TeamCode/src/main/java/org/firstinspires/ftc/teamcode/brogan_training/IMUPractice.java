@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.mechanisms.RobotIMU;
+import org.firstinspires.ftc.teamcode.brogan_training.mechanisms.RobotIMU;
 
 @Disabled
 @TeleOp
