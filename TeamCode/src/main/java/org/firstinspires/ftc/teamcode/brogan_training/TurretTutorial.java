@@ -12,6 +12,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.limelightvision.LLResult;
+
+
+@Disabled
 public class TurretTutorial {
 
     private DcMotorEx turret;
@@ -63,8 +68,8 @@ public class TurretTutorial {
 
         // -------------- start PD controller -------------------
 
-        double error = goalX - curID.ftcPose.Berring;
-        curID
+//        double error = goalX - curID.ftcPose.Berring;
+//        curID
         double dTera = 0;
 
         double dterm = 0;

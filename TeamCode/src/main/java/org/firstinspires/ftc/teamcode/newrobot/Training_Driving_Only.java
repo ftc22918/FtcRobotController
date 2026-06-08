@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.newrobot;
 
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -11,44 +10,10 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import java.text.NumberFormat;
 
-/**
- * Control Hub Hardware Profile:
- *   Hardware Variables:
- *     Control Hub
- *       DcMotor:  motor_right_rear, motor port 0, GoBILDA Series 5203
- *       DcMotor:  motor_right_forward, motor port 1, GoBILDA Series 5203
- *       DcMotor:  motor_left_forward, motor port 2, GoBILDA Series 5203
- *       DcMotor:  motor_left_rear, motor port 3, GoBILDA Series 5203
- *       Servo:    servo_rgb_light, servo port 0, GoBILDA RGB Indicator Light
- *       I2C:      pinpoint_odometry_computer, I2C port 2, GoBILDA Pinpoint Odometry Computer
- *       Network Device:  limelight, eth0: 172.29.0.26, Limelight 3A
- *       Digital Device:  sensor_laser_distance, digital port 0, GoBILDA Distance Sensor
- *     Expansion Hub
- *       DcMotor:  motor_turret, port, motor port 0, GoBILDA Series 5203
- *       DcMotor:  motor_artifact_intake, motor port 1, GoBILDA Series 5203
- *       DcMotor:  motor_main_flywheel, motor port 2, GoBILDA Series 5203
- *       DcMotor:  motor_aux_flywheel, motor port 3, GoBILDA Series 5203
- *       Servo:    servo_flipper, servo port 0, Axon MINI MK2
- *     Limelight:
- *       Red Goal:  April-Tag 24
- *       Blue Goal: April-Tag
- *       Artifact Order:  April-Tag
- * Notes:
- *      Lowest Max Velocity of drive motors:  1880
- * Syntax types:
- *   Class - Pascal Case:     ThisIsPascalCase
- *   Functions - Camel Case:  thisIsCamelCase
- *   Variables - Camel Case:  thisIsCamelCase
- *   Hardware - Snake Case:   this_is_snake_case
- *   Constants - Upper Snake Case:  THIS_IS_UPPER_CASE
- */
-
 @SuppressWarnings({"FieldMayBeFinal","FieldCanBeLocal"})
 
-@TeleOp(name="Test_Code_Do_Not_Use",group="Test_Group")
-public class Main_TeleOp_Test extends LinearOpMode {
-
-
+@TeleOp(name="Drive Training",group="Training")
+public class Training_Driving_Only extends LinearOpMode {
 
     //    DriveTrain Hardware Variables
     private DcMotorEx motorRightForward;
@@ -75,29 +40,18 @@ public class Main_TeleOp_Test extends LinearOpMode {
 
     //    Shooter Software Variables
     double flywheelTargetVelocity;
-    double motorMainFlywheelTargetPower = 0;
-    double motorMainFlywheelTargetVelocityAcceptableErrorRange = 20;
     double F = 14.098; // Feedforward gain to counteract constant forces like friction.
     double P = 265;    // Proportional gain to correct error based on how far off the velocity is.
     private double servoFlipperStartingAngle = 0.93;
     private double servoFlipperEndingAngle = 0.7;
     private int SERVO_FLIPPER_TRAVEL_TIME = 250;
-    private int shotsAttempted;
     double adjustFocusPower = 0.3;
-
 
     //    LimeLight Variables
     private Limelight3A limelight;
     private IMU imu;
     private double distance;
     private int limelightIndexToUse = 8;
-
-
-//    Test Variables
-    double[] stepSizes = {1000.0, 100.0, 10.0, 1.0};
-    int stepIndex = 1;
-
-
 
     AprilTag aprilTag = new AprilTag();
     DriveTrain driveTrain = new DriveTrain();
@@ -134,7 +88,6 @@ public class Main_TeleOp_Test extends LinearOpMode {
         sensorLaserDistance.setMode(DigitalChannel.Mode.INPUT);
 
 //        Initiate shooter hardware
-//        motorTurret = shooterHardware.initTurretMotor(hardwareMap,"motor_turret", kP, kI, kD, F, position);
         motorArtifactIntake = initHardware.initMotor(hardwareMap,"motor_artifact_intake", "REVERSE", "FLOAT", false);
         motorMainFlywheel = initHardware.initMotor(hardwareMap,"motor_main_flywheel", "FORWARD", "FLOAT", true);
         motorAuxFlywheel = initHardware.initMotor(hardwareMap,"motor_aux_flywheel", "FORWARD", "FLOAT", true);
@@ -204,8 +157,6 @@ public class Main_TeleOp_Test extends LinearOpMode {
             flywheelTargetVelocity = 1400;
         }
 
-
-
         // D-pad left/right adjusts the angle of the robot.
         if (gamepad1.dpadLeftWasPressed()) {
             motorLeftRear.setPower(adjustFocusPower);
@@ -221,8 +172,6 @@ public class Main_TeleOp_Test extends LinearOpMode {
             motorLeftRear.setPower(0);
             motorRightRear.setPower(0);
         }
-
-
 
 //        User ready to shoot with 3 artifacts
         if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) {

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.newrobot;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -30,6 +31,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
  */
 
 @SuppressWarnings("FieldMayBeFinal")
+@Disabled
 @TeleOp(group="Test_Group")
 public class Main_TeleOP extends LinearOpMode {
 
