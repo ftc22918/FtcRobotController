@@ -59,7 +59,7 @@ public class Main_TeleOp_Test extends LinearOpMode {
     //    User Power Customisation for the DriveTrain
     private boolean lbWasPressed = false;
     private boolean rbWasPressed = false;
-    private double driveTrainPowerCustomisation = 0.5;
+    private double driveTrainPowerCustomisation = 0.8;
 
     //    Artifact Intake Counter Variables
     private DigitalChannel sensorLaserDistance;
@@ -74,7 +74,7 @@ public class Main_TeleOp_Test extends LinearOpMode {
     Servo servoFlipper;
 
     //    Shooter Software Variables
-    double flywheelTargetVelocity;
+    double flywheelTargetVelocity = 1300;
     double motorMainFlywheelTargetPower = 0;
     double motorMainFlywheelTargetVelocityAcceptableErrorRange = 20;
     double F = 14.098; // Feedforward gain to counteract constant forces like friction.
@@ -198,13 +198,19 @@ public class Main_TeleOp_Test extends LinearOpMode {
         distance = aprilTag.getDistance(limelight, imu) / 2.54;
 
 //        Determine flywheels target velocity based on distance
-        if (20.0 < distance && distance < 50.0) {
-            flywheelTargetVelocity = 1300;
-        } else {
-            flywheelTargetVelocity = 1400;
+//        if (20.0 < distance && distance < 50.0) {
+//            flywheelTargetVelocity = 1300;
+//        } else {
+//            flywheelTargetVelocity = 1400;
+//        }
+
+
+        if (gamepad1.xWasPressed()) {
+            flywheelTargetVelocity -= 50;
         }
-
-
+        if (gamepad1.yWasPressed()) {
+            flywheelTargetVelocity += 50;
+        }
 
         // D-pad left/right adjusts the angle of the robot.
         if (gamepad1.dpadLeftWasPressed()) {
