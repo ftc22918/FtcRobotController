@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.newrobot;
 
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -83,7 +84,16 @@ public class Main_TeleOp_Test extends LinearOpMode {
     private Limelight3A limelight;
     private IMU imu;
     private double distance;
-    private int limelightIndexToUse = 8;
+    private int teamColor = 8;  // Default is 8 which is RED, 9 is BLUE.  The numbers correspond to the limelight index to use for each april tag color.
+
+
+
+
+
+
+
+
+
 
     AprilTag aprilTag = new AprilTag();
     DriveTrain driveTrain = new DriveTrain();
@@ -96,6 +106,7 @@ public class Main_TeleOp_Test extends LinearOpMode {
         while (!isStarted()) {
             setUserDrivetrainPower();
             setUserDrivetrainPowerTelemetry();
+            changeTeamColor(limelight);
         }
         waitForStart();
         limelight.start();
@@ -132,7 +143,7 @@ public class Main_TeleOp_Test extends LinearOpMode {
         // motorAuxFlywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
         // Initiate LimeLight
-        limelight = initHardware.initLimelight(hardwareMap, "limelight", limelightIndexToUse);
+        limelight = initHardware.initLimelight(hardwareMap, "limelight", teamColor);
 
         // Initiate IMU
         imu = initHardware.initIMU(hardwareMap,"imu","LEFT","UP");
@@ -142,21 +153,28 @@ public class Main_TeleOp_Test extends LinearOpMode {
 
     // Configure preferred custom drive train max power
     private void setUserDrivetrainPower() {
-        boolean lbPressed = gamepad1.left_bumper;
-        if (lbPressed && !lbWasPressed) {
+        if (gamepad1.leftBumperWasPressed()) {
             if (driveTrainPowerCustomisation != 0) {
                 driveTrainPowerCustomisation -= 0.1;
             }
         }
-        lbWasPressed = lbPressed;
 
-        boolean rbPressed = gamepad1.right_bumper;
-        if (rbPressed && !rbWasPressed) {
+        if (gamepad1.rightBumperWasPressed()) {
             if (driveTrainPowerCustomisation != 1.0) {
                 driveTrainPowerCustomisation += 0.1;
             }
         }
-        rbWasPressed = rbPressed;
+    }
+
+    private void changeTeamColor(Limelight3A limelight) {
+        if (gamepad1.xWasPressed()) {
+            if (teamColor == 8) {
+                teamColor = 9;
+            } else {
+                teamColor = 8;
+            }
+            limelight.pipelineSwitch(teamColor);
+        }
     }
 
     private void teleOpControls() {
@@ -191,15 +209,17 @@ public class Main_TeleOp_Test extends LinearOpMode {
             flywheelTargetVelocity += 50;
         }
 
-//        Determine flywheels target velocity based on distance
-//        if (20.0 <= distance && distance < 40.0) {
+////        Determine flywheels target velocity based on distance
+//        if (0.0 == distance) {
+//            flywheelTargetVelocity = 0.0;
+//        } else if (20.0 <= distance && distance < 40.0) {
 //            flywheelTargetVelocity = 1300;
 //        } else if (40.0 <= distance && distance < 50.0) {
 //            flywheelTargetVelocity = 1400;
 //        } else if (50.0 <= distance && distance < 70.0) {
 //            flywheelTargetVelocity = 1450;
-//        } else if (60.0 <= distance && distance < 70.0) {
-//            flywheelTargetVelocity = 1400;
+////        } else if (60.0 <= distance && distance < 70.0) {
+////            flywheelTargetVelocity = 1400;
 //        }
 
         // D-pad left/right adjusts the angle of the robot at small increments
@@ -219,15 +239,20 @@ public class Main_TeleOp_Test extends LinearOpMode {
         }
 
         // User ready to launch artifact at goal
-        if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) {
-            motorMainFlywheel.setVelocity(flywheelTargetVelocity);  // Command the motor to run at the current target velocity.
-            sleep (1000);  // Give the flywheel 1 second to spin up to target velocity
-            motorArtifactIntake.setPower(1);  // Activate artifact intake motor to push any artifacts towards launch servo
-            sleep(250);  // Only run the artifact intake motor for .25 seconds
-            shootArtifact();  // Start artifact firing sequence
-            sleep(1000);  // Give the flywheel 1 second to continue to spin at target velocity before turning off power
-            artifactIntakeCount = 0;  // Reset artifact count
-            motorMainFlywheel.setVelocity(0);  // Turn off Main flywheel
+        if (gamepad1.aWasPressed() && gamepad1.leftBumperWasPressed() || gamepad2.aWasPressed()) {
+            if (distance == 0.0) {
+                gamepad1.rumbleBlips(3);
+
+            } else {
+                motorMainFlywheel.setVelocity(flywheelTargetVelocity);  // Command the motor to run at the current target velocity.
+                sleep(1000);  // Give the flywheel 1 second to spin up to target velocity
+                motorArtifactIntake.setPower(1);  // Activate artifact intake motor to push any artifacts towards launch servo
+                sleep(250);  // Only run the artifact intake motor for .25 seconds
+                shootArtifact();  // Start artifact firing sequence
+                sleep(1000);  // Give the flywheel 1 second to continue to spin at target velocity before turning off power
+                artifactIntakeCount = 0;  // Reset artifact count
+                motorMainFlywheel.setVelocity(0);  // Turn off Main flywheel
+            }
         }
     }
 
@@ -247,7 +272,14 @@ public class Main_TeleOp_Test extends LinearOpMode {
         NumberFormat percentFormatter = NumberFormat.getPercentInstance();
         percentFormatter.setMaximumFractionDigits(0); // e.g., 2 decimal places
 
+        if (teamColor == 8) {
+            telemetry.addData("Team Color", "Red");
+        } else {
+            telemetry.addData("Team Color", "Blue");
+        }
         telemetry.addData("Set DriveTrain Power @", percentFormatter.format(driveTrainPowerCustomisation));
+        telemetry.addData("----------------","----------------");
+        telemetry.addData("Change Team Color", "Press X");
         telemetry.addData("Left Bumper", "Decrease DriveTrain Power by 10%");
         telemetry.addData("Right Bumper", "Increase DriveTrain Power by 10%");
         telemetry.update();
@@ -256,8 +288,10 @@ public class Main_TeleOp_Test extends LinearOpMode {
     // Display during teleop mode
     private void opModeTelemetry() {
         telemetry.addData("Artifact Intake Count", artifactIntakeCount);
-        if (distance == 0.0) {
-            telemetry.addData("Distance in inch", "Cannot see April Tag0");
+        if (distance == 0.0 && teamColor == 8) {
+            telemetry.addData("Distance in inch", "Cannot see Red Team April tag");
+        } else if (distance == 0.0 && teamColor == 9) {
+            telemetry.addData("Distance in inch", "Cannot see Blue Team April tag");
         } else {
             telemetry.addData("Distance in inch", distance);
         }

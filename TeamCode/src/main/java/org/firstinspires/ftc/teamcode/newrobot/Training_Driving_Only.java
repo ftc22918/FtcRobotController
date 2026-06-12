@@ -183,7 +183,9 @@ public class Training_Driving_Only extends LinearOpMode {
         distance = aprilTag.getDistance(limelight, imu) / 2.54;
 
 //        Determine flywheels target velocity based on distance
-        if (20.0 <= distance && distance < 40.0) {
+        if (0.0 == distance) {
+            flywheelTargetVelocity = 0.0;
+        } else if (20.0 <= distance && distance < 40.0) {
             flywheelTargetVelocity = 1300;
         } else if (40.0 <= distance && distance < 50.0) {
             flywheelTargetVelocity = 1400;
