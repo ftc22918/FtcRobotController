@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.newrobot;
 
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -48,56 +47,43 @@ import java.text.NumberFormat;
 @TeleOp(name="Test_Code_Do_Not_Use",group="Test_Group")
 public class Main_TeleOp_Test extends LinearOpMode {
 
-
-
-    //    DriveTrain Hardware Variables
+    // DriveTrain Hardware Variables
     private DcMotorEx motorRightForward;
     private DcMotorEx motorRightRear;
     private DcMotorEx motorLeftForward;
     private DcMotorEx motorLeftRear;
 
-    //    User Power Customisation for the DriveTrain
+    // User Power Customisation for the DriveTrain
     private boolean lbWasPressed = false;
     private boolean rbWasPressed = false;
-    private double driveTrainPowerCustomisation = 0.8;
+    private double driveTrainPowerCustomisation = 0.5;
 
-    //    Artifact Intake Counter Variables
+    // Artifact Intake Counter Variables
     private DigitalChannel sensorLaserDistance;
     private int artifactIntakeCount = 0;
     private boolean lastState = false;
 
-    //    Shooter Hardware Variables
-    private DcMotorEx motorTurret;
+    // Shooter Hardware Variables
+    // private DcMotorEx motorTurret;
     DcMotorEx motorArtifactIntake;
     DcMotorEx motorMainFlywheel;
-    DcMotorEx motorAuxFlywheel;
+    // DcMotorEx motorAuxFlywheel;
     Servo servoFlipper;
 
-    //    Shooter Software Variables
+    // Shooter Software Variables
     double flywheelTargetVelocity = 1300;
-    double motorMainFlywheelTargetPower = 0;
-    double motorMainFlywheelTargetVelocityAcceptableErrorRange = 20;
     double F = 14.098; // Feedforward gain to counteract constant forces like friction.
     double P = 265;    // Proportional gain to correct error based on how far off the velocity is.
     private double servoFlipperStartingAngle = 0.93;
     private double servoFlipperEndingAngle = 0.7;
     private int SERVO_FLIPPER_TRAVEL_TIME = 250;
-    private int shotsAttempted;
-    double adjustFocusPower = 0.3;
+    double adjustFocusPower = 0.5;
 
-
-    //    LimeLight Variables
+    // LimeLight Variables
     private Limelight3A limelight;
     private IMU imu;
     private double distance;
     private int limelightIndexToUse = 8;
-
-
-//    Test Variables
-    double[] stepSizes = {1000.0, 100.0, 10.0, 1.0};
-    int stepIndex = 1;
-
-
 
     AprilTag aprilTag = new AprilTag();
     DriveTrain driveTrain = new DriveTrain();
@@ -119,42 +105,42 @@ public class Main_TeleOp_Test extends LinearOpMode {
         }
     }
 
+    // Initiates the hardware of the robot
     public void initHardware() {
-//        Generate an instance of the Initiate_Hardware file
+        // Generate an instance of the Initiate_Hardware file that is used to set up all the hardware for the robot
         Initiate_Hardware initHardware = new Initiate_Hardware();
 
-//        Initiate drive train hardware
+        // Initiate drive train hardware (all 4 motors that control the wheels)
         motorRightForward = initHardware.initMotor(hardwareMap,"motor_right_forward", "REVERSE", "BRAKE", true);
         motorRightRear = initHardware.initMotor(hardwareMap,"motor_right_rear", "REVERSE", "BRAKE", true);
         motorLeftForward = initHardware.initMotor(hardwareMap,"motor_left_forward", "FORWARD", "BRAKE", true);
         motorLeftRear = initHardware.initMotor(hardwareMap,"motor_left_rear", "FORWARD", "BRAKE", true);
 
-//        Initiate laser distance sensor
+        // Initiate laser distance sensor (counts the number of artifacts gathered)
         sensorLaserDistance = hardwareMap.get(DigitalChannel.class, "sensor_laser_distance");
         sensorLaserDistance.setMode(DigitalChannel.Mode.INPUT);
 
-//        Initiate shooter hardware
-//        motorTurret = shooterHardware.initTurretMotor(hardwareMap,"motor_turret", kP, kI, kD, F, position);
+        // Initiate shooter hardware
         motorArtifactIntake = initHardware.initMotor(hardwareMap,"motor_artifact_intake", "REVERSE", "FLOAT", false);
         motorMainFlywheel = initHardware.initMotor(hardwareMap,"motor_main_flywheel", "FORWARD", "FLOAT", true);
-        motorAuxFlywheel = initHardware.initMotor(hardwareMap,"motor_aux_flywheel", "FORWARD", "FLOAT", true);
+        // motorAuxFlywheel = initHardware.initMotor(hardwareMap,"motor_aux_flywheel", "FORWARD", "FLOAT", true);
         servoFlipper = initHardware.initServo(hardwareMap,"servo_flipper", servoFlipperStartingAngle);
 
-//        Initiate PIDF Coefficients
+        // Initiate PIDF Coefficients and apply them to the Flywheels
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
         motorMainFlywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
-        motorAuxFlywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+        // motorAuxFlywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
-//        Initiate LimeLight
+        // Initiate LimeLight
         limelight = initHardware.initLimelight(hardwareMap, "limelight", limelightIndexToUse);
 
-//        Initiate IMU
+        // Initiate IMU
         imu = initHardware.initIMU(hardwareMap,"imu","LEFT","UP");
 
         telemetry.addLine("Init complete");
     }
 
-    //        Configure preferred custom drive train max power
+    // Configure preferred custom drive train max power
     private void setUserDrivetrainPower() {
         boolean lbPressed = gamepad1.left_bumper;
         if (lbPressed && !lbWasPressed) {
@@ -174,19 +160,20 @@ public class Main_TeleOp_Test extends LinearOpMode {
     }
 
     private void teleOpControls() {
-//        Drive Train controls
+        // Drive Train controls
         forward = gamepad1.left_stick_y;
         strafe = gamepad1.left_stick_x;
         rotate = gamepad1.right_stick_x;
         driveTrain.drive(motorRightForward, motorRightRear, motorLeftForward, motorLeftRear, forward, strafe, rotate, driveTrainPowerCustomisation);
 
-//        Artifact Intake
+        // Count the number of artifact that have been consumed since last shooting
         boolean artifactDetected = sensorLaserDistance.getState();
         if (artifactDetected && !lastState) {
             artifactIntakeCount++;
         }
         lastState = artifactDetected;
 
+        // Disables artifact intake motor if 3 artifacts have already been acquired
         if (artifactIntakeCount < 3) {
             motorArtifactIntake.setPower(1);
         } else {
@@ -194,16 +181,8 @@ public class Main_TeleOp_Test extends LinearOpMode {
             motorArtifactIntake.setPower(0);
         }
 
-//        Get distance in inches from April Tag.  Distance returns in CMs, and the / 2.54 converts it into Inches
+        // Get distance in inches from April Tag.  Distance returns in CMs, and the / 2.54 converts it into Inches
         distance = aprilTag.getDistance(limelight, imu) / 2.54;
-
-//        Determine flywheels target velocity based on distance
-//        if (20.0 < distance && distance < 50.0) {
-//            flywheelTargetVelocity = 1300;
-//        } else {
-//            flywheelTargetVelocity = 1400;
-//        }
-
 
         if (gamepad1.xWasPressed()) {
             flywheelTargetVelocity -= 50;
@@ -212,7 +191,18 @@ public class Main_TeleOp_Test extends LinearOpMode {
             flywheelTargetVelocity += 50;
         }
 
-        // D-pad left/right adjusts the angle of the robot.
+//        Determine flywheels target velocity based on distance
+//        if (20.0 <= distance && distance < 40.0) {
+//            flywheelTargetVelocity = 1300;
+//        } else if (40.0 <= distance && distance < 50.0) {
+//            flywheelTargetVelocity = 1400;
+//        } else if (50.0 <= distance && distance < 70.0) {
+//            flywheelTargetVelocity = 1450;
+//        } else if (60.0 <= distance && distance < 70.0) {
+//            flywheelTargetVelocity = 1400;
+//        }
+
+        // D-pad left/right adjusts the angle of the robot at small increments
         if (gamepad1.dpadLeftWasPressed()) {
             motorLeftRear.setPower(adjustFocusPower);
             motorRightRear.setPower(-adjustFocusPower);
@@ -228,56 +218,31 @@ public class Main_TeleOp_Test extends LinearOpMode {
             motorRightRear.setPower(0);
         }
 
-
-
-//        User ready to shoot with 3 artifacts
+        // User ready to launch artifact at goal
         if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) {
-
-            PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
-            // Apply the new coefficients to the motor in every loop iteration.
-            motorMainFlywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
-
-            // Command the motor to run at the current target velocity.
-            motorMainFlywheel.setVelocity(flywheelTargetVelocity);
-
-            if (artifactIntakeCount == 3) {
-                while (artifactIntakeCount != 0) {
-                    while (motorMainFlywheel.getVelocity() != flywheelTargetVelocity){
-                        sleep(100);
-                    }
-                    shootArtifact();
-                    artifactIntakeCount--;
-                    sleep(250);
-                    if (artifactIntakeCount == 0) {
-                        sleep(1000);
-                    }
-                }
-            }
-            if (artifactIntakeCount < 3) {
-                while (motorMainFlywheel.getVelocity() != flywheelTargetVelocity){
-                    sleep(100);
-                }
-                motorArtifactIntake.setPower(1);
-                sleep(250);
-                shootArtifact();
-                sleep(1000);
-
-            }
-            artifactIntakeCount = 0;
-            motorMainFlywheel.setVelocity(0);
+            motorMainFlywheel.setVelocity(flywheelTargetVelocity);  // Command the motor to run at the current target velocity.
+            sleep (1000);  // Give the flywheel 1 second to spin up to target velocity
+            motorArtifactIntake.setPower(1);  // Activate artifact intake motor to push any artifacts towards launch servo
+            sleep(250);  // Only run the artifact intake motor for .25 seconds
+            shootArtifact();  // Start artifact firing sequence
+            sleep(1000);  // Give the flywheel 1 second to continue to spin at target velocity before turning off power
+            artifactIntakeCount = 0;  // Reset artifact count
+            motorMainFlywheel.setVelocity(0);  // Turn off Main flywheel
         }
     }
 
+    // Artifact launch sequence
     private void shootArtifact() {
         motorArtifactIntake.setPower(0);
-        servoFlipper.setPosition(servoFlipperEndingAngle);
-        sleep(SERVO_FLIPPER_TRAVEL_TIME);
-        servoFlipper.setPosition(servoFlipperStartingAngle);
-        sleep(SERVO_FLIPPER_TRAVEL_TIME);
-        motorArtifactIntake.setPower(1);
+        servoFlipper.setPosition(servoFlipperEndingAngle);  // Use the servo arm to lift the artifact up to the main flywheel
+        sleep(SERVO_FLIPPER_TRAVEL_TIME);  // Time it takes for the servo to fully lift the artifact
+        servoFlipper.setPosition(servoFlipperStartingAngle);  // Reset the servo arm to its starting position
+        sleep(SERVO_FLIPPER_TRAVEL_TIME);  // Time it takes for the servo to fully lift the artifact
+        motorArtifactIntake.setPower(1);  // Activate the artifact intake motor to move any artifacts further into the robot
         sleep(250);
     }
 
+    // Allows the user to set their preferred drivetrain power
     private void setUserDrivetrainPowerTelemetry() {
         NumberFormat percentFormatter = NumberFormat.getPercentInstance();
         percentFormatter.setMaximumFractionDigits(0); // e.g., 2 decimal places
@@ -288,6 +253,7 @@ public class Main_TeleOp_Test extends LinearOpMode {
         telemetry.update();
     }
 
+    // Display during teleop mode
     private void opModeTelemetry() {
         telemetry.addData("Artifact Intake Count", artifactIntakeCount);
         if (distance == 0.0) {
@@ -295,7 +261,8 @@ public class Main_TeleOp_Test extends LinearOpMode {
         } else {
             telemetry.addData("Distance in inch", distance);
         }
-        telemetry.addData("Flywheel Velocity", flywheelTargetVelocity);
+        telemetry.addData("Flywheel Actual Velocity", motorMainFlywheel.getVelocity());
+        telemetry.addData("Flywheel Target Velocity", flywheelTargetVelocity);
         telemetry.addData("---------------", "-------------");
         telemetry.addData("Controls", "Listed Below");
         telemetry.addData("Left Joystick Up", "Forward");

@@ -10,6 +10,38 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import java.text.NumberFormat;
 
+/**
+ * Control Hub Hardware Profile:
+ *   Hardware Variables:
+ *     Control Hub
+ *       DcMotor:  motor_right_rear, motor port 0, GoBILDA Series 5203
+ *       DcMotor:  motor_right_forward, motor port 1, GoBILDA Series 5203
+ *       DcMotor:  motor_left_forward, motor port 2, GoBILDA Series 5203
+ *       DcMotor:  motor_left_rear, motor port 3, GoBILDA Series 5203
+ *       Servo:    servo_rgb_light, servo port 0, GoBILDA RGB Indicator Light
+ *       I2C:      pinpoint_odometry_computer, I2C port 2, GoBILDA Pinpoint Odometry Computer
+ *       Network Device:  limelight, eth0: 172.29.0.26, Limelight 3A
+ *       Digital Device:  sensor_laser_distance, digital port 0, GoBILDA Distance Sensor
+ *     Expansion Hub
+ *       DcMotor:  motor_turret, port, motor port 0, GoBILDA Series 5203
+ *       DcMotor:  motor_artifact_intake, motor port 1, GoBILDA Series 5203
+ *       DcMotor:  motor_main_flywheel, motor port 2, GoBILDA Series 5203
+ *       DcMotor:  motor_aux_flywheel, motor port 3, GoBILDA Series 5203
+ *       Servo:    servo_flipper, servo port 0, Axon MINI MK2
+ *     Limelight:
+ *       Red Goal:  April-Tag 24
+ *       Blue Goal: April-Tag
+ *       Artifact Order:  April-Tag
+ * Notes:
+ *      Lowest Max Velocity of drive motors:  1880
+ * Syntax types:
+ *   Class - Pascal Case:     ThisIsPascalCase
+ *   Functions - Camel Case:  thisIsCamelCase
+ *   Variables - Camel Case:  thisIsCamelCase
+ *   Hardware - Snake Case:   this_is_snake_case
+ *   Constants - Upper Snake Case:  THIS_IS_UPPER_CASE
+ */
+
 @SuppressWarnings({"FieldMayBeFinal","FieldCanBeLocal"})
 
 @TeleOp(name="Drive Training",group="Training")
@@ -32,10 +64,10 @@ public class Training_Driving_Only extends LinearOpMode {
     private boolean lastState = false;
 
     //    Shooter Hardware Variables
-    private DcMotorEx motorTurret;
+//    private DcMotorEx motorTurret;
     DcMotorEx motorArtifactIntake;
     DcMotorEx motorMainFlywheel;
-    DcMotorEx motorAuxFlywheel;
+//    DcMotorEx motorAuxFlywheel;
     Servo servoFlipper;
 
     //    Shooter Software Variables
@@ -45,7 +77,7 @@ public class Training_Driving_Only extends LinearOpMode {
     private double servoFlipperStartingAngle = 0.93;
     private double servoFlipperEndingAngle = 0.7;
     private int SERVO_FLIPPER_TRAVEL_TIME = 250;
-    double adjustFocusPower = 0.3;
+    double adjustFocusPower = 0.5;
 
     //    LimeLight Variables
     private Limelight3A limelight;
@@ -74,29 +106,29 @@ public class Training_Driving_Only extends LinearOpMode {
     }
 
     public void initHardware() {
-//        Generate an instance of the Initiate_Hardware file
+//        Generate an instance of the Initiate_Hardware file that is used to set up all the hardware for the robot
         Initiate_Hardware initHardware = new Initiate_Hardware();
 
-//        Initiate drive train hardware
+//        Initiate drive train hardware (all 4 motors that control the wheels)
         motorRightForward = initHardware.initMotor(hardwareMap,"motor_right_forward", "REVERSE", "BRAKE", true);
         motorRightRear = initHardware.initMotor(hardwareMap,"motor_right_rear", "REVERSE", "BRAKE", true);
         motorLeftForward = initHardware.initMotor(hardwareMap,"motor_left_forward", "FORWARD", "BRAKE", true);
         motorLeftRear = initHardware.initMotor(hardwareMap,"motor_left_rear", "FORWARD", "BRAKE", true);
 
-//        Initiate laser distance sensor
+//        Initiate laser distance sensor (counts the number of artifacts gathered)
         sensorLaserDistance = hardwareMap.get(DigitalChannel.class, "sensor_laser_distance");
         sensorLaserDistance.setMode(DigitalChannel.Mode.INPUT);
 
 //        Initiate shooter hardware
         motorArtifactIntake = initHardware.initMotor(hardwareMap,"motor_artifact_intake", "REVERSE", "FLOAT", false);
         motorMainFlywheel = initHardware.initMotor(hardwareMap,"motor_main_flywheel", "FORWARD", "FLOAT", true);
-        motorAuxFlywheel = initHardware.initMotor(hardwareMap,"motor_aux_flywheel", "FORWARD", "FLOAT", true);
+//        motorAuxFlywheel = initHardware.initMotor(hardwareMap,"motor_aux_flywheel", "FORWARD", "FLOAT", true);
         servoFlipper = initHardware.initServo(hardwareMap,"servo_flipper", servoFlipperStartingAngle);
 
-//        Initiate PIDF Coefficients
+//        Initiate PIDF Coefficients and apply them to the Flywheels
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
         motorMainFlywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
-        motorAuxFlywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+//        motorAuxFlywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
 //        Initiate LimeLight
         limelight = initHardware.initLimelight(hardwareMap, "limelight", limelightIndexToUse);
@@ -151,13 +183,17 @@ public class Training_Driving_Only extends LinearOpMode {
         distance = aprilTag.getDistance(limelight, imu) / 2.54;
 
 //        Determine flywheels target velocity based on distance
-        if (20.0 < distance && distance < 50.0) {
+        if (20.0 <= distance && distance < 40.0) {
             flywheelTargetVelocity = 1300;
-        } else {
+        } else if (40.0 <= distance && distance < 50.0) {
             flywheelTargetVelocity = 1400;
+        } else if (50.0 <= distance && distance < 70.0) {
+            flywheelTargetVelocity = 1450;
+//        } else if (60.0 <= distance && distance < 70.0) {
+//            flywheelTargetVelocity = 1400;
         }
 
-        // D-pad left/right adjusts the angle of the robot.
+        // D-pad left/right adjusts the angle of the robot at small increments
         if (gamepad1.dpadLeftWasPressed()) {
             motorLeftRear.setPower(adjustFocusPower);
             motorRightRear.setPower(-adjustFocusPower);
@@ -173,51 +209,27 @@ public class Training_Driving_Only extends LinearOpMode {
             motorRightRear.setPower(0);
         }
 
-//        User ready to shoot with 3 artifacts
+//        User ready to launch artifact at goal
         if (gamepad1.aWasPressed() || gamepad2.aWasPressed()) {
-
-            PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
-            // Apply the new coefficients to the motor in every loop iteration.
-            motorMainFlywheel.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
-
-            // Command the motor to run at the current target velocity.
-            motorMainFlywheel.setVelocity(flywheelTargetVelocity);
-
-            if (artifactIntakeCount == 3) {
-                while (artifactIntakeCount != 0) {
-                    while (motorMainFlywheel.getVelocity() != flywheelTargetVelocity){
-                        sleep(100);
-                    }
-                    shootArtifact();
-                    artifactIntakeCount--;
-                    sleep(250);
-                    if (artifactIntakeCount == 0) {
-                        sleep(1000);
-                    }
-                }
-            }
-            if (artifactIntakeCount < 3) {
-                while (motorMainFlywheel.getVelocity() != flywheelTargetVelocity){
-                    sleep(100);
-                }
-                motorArtifactIntake.setPower(1);
-                sleep(250);
-                shootArtifact();
-                sleep(1000);
-
-            }
-            artifactIntakeCount = 0;
-            motorMainFlywheel.setVelocity(0);
+            motorMainFlywheel.setVelocity(flywheelTargetVelocity);  // Command the motor to run at the current target velocity.
+            sleep (1000);  // Give the flywheel 1 second to spin up to target velocity
+            motorArtifactIntake.setPower(1);  // Activate artifact intake motor to push any artifacts towards launch servo
+            sleep(250);  // Only run the artifact intake motor for .25 seconds
+            shootArtifact();  // Start artifact firing sequence
+            sleep(1000);  // Give the flywheel 1 second to continue to spin at target velocity before turning off power
+            artifactIntakeCount = 0;  // Reset artifact count
+            motorMainFlywheel.setVelocity(0);  // Turn off Main flywheel
         }
     }
 
+    // Artifact launch sequence
     private void shootArtifact() {
         motorArtifactIntake.setPower(0);
-        servoFlipper.setPosition(servoFlipperEndingAngle);
-        sleep(SERVO_FLIPPER_TRAVEL_TIME);
-        servoFlipper.setPosition(servoFlipperStartingAngle);
-        sleep(SERVO_FLIPPER_TRAVEL_TIME);
-        motorArtifactIntake.setPower(1);
+        servoFlipper.setPosition(servoFlipperEndingAngle);  // Use the servo arm to lift the artifact up to the main flywheel
+        sleep(SERVO_FLIPPER_TRAVEL_TIME);  // Time it takes for the servo to fully lift the artifact
+        servoFlipper.setPosition(servoFlipperStartingAngle);  // Reset the servo arm to its starting position
+        sleep(SERVO_FLIPPER_TRAVEL_TIME);  // Time it takes for the servo to fully lift the artifact
+        motorArtifactIntake.setPower(1);  // Activate the artifact intake motor to move any artifacts further into the robot
         sleep(250);
     }
 
